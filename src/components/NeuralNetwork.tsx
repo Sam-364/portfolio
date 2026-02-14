@@ -2,30 +2,24 @@
 
 import { useEffect, useRef } from 'react';
 
-interface Particle {
+interface Node {
   x: number;
   y: number;
   vx: number;
   vy: number;
   radius: number;
-  layer: number;
-  pulsePhase: number;
+  baseRadius: number;
+  color: [number, number, number];
+  pulseOffset: number;
 }
 
-interface Pulse {
+interface Signal {
   fromIdx: number;
   toIdx: number;
   progress: number;
   speed: number;
+  color: [number, number, number];
 }
-
-const LAYER_COLORS = [
-  [16, 185, 129],  // emerald
-  [6, 182, 212],   // cyan
-  [59, 130, 246],  // blue
-  [139, 92, 246],  // violet
-  [236, 72, 153],  // pink
-];
 
 export default function NeuralNetwork() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -33,15 +27,25 @@ export default function NeuralNetwork() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     let animationId: number;
-    let particles: Particle[] = [];
-    let pulses: Pulse[] = [];
+    let nodes: Node[] = [];
+    let signals: Signal[] = [];
     let time = 0;
-    const mouse = { x: -1000, y: -1000 };
+    const mouse = { x: -9999, y: -9999 };
+
+    const palette: [number, number, number][] = [
+      [6, 182, 212],    // cyan
+      [59, 130, 246],   // blue
+      [99, 102, 241],   // indigo
+      [139, 92, 246],   // violet
+      [16, 185, 129],   // emerald
+    ];
+
+    const pickColor = (): [number, number, number] =>
+      palette[Math.floor(Math.random() * palette.length)];
 
     const resize = () => {
       canvas.width = window.innerWidth;
@@ -50,236 +54,243 @@ export default function NeuralNetwork() {
 
     const init = () => {
       resize();
-      const count = Math.min(
-        Math.floor((canvas.width * canvas.height) / 10000),
-        180
-      );
-      particles = Array.from({ length: count }, () => {
-        const y = Math.random() * canvas.height;
-        const layer = Math.min(
-          Math.floor((y / canvas.height) * LAYER_COLORS.length),
-          LAYER_COLORS.length - 1
-        );
-        const isHub = Math.random() < 0.08;
-        return {
+      const area = canvas.width * canvas.height;
+      const count = Math.min(Math.floor(area / 6000), 250);
+
+      nodes = [];
+      for (let i = 0; i < count; i++) {
+        const isHub = Math.random() < 0.12;
+        nodes.push({
           x: Math.random() * canvas.width,
-          y,
-          vx: (Math.random() - 0.5) * 0.35,
-          vy: (Math.random() - 0.5) * 0.2,
-          radius: isHub ? Math.random() * 2.5 + 2 : Math.random() * 1.5 + 0.5,
-          layer,
-          pulsePhase: Math.random() * Math.PI * 2,
-        };
-      });
-      pulses = [];
+          y: Math.random() * canvas.height,
+          vx: (Math.random() - 0.5) * 0.5,
+          vy: (Math.random() - 0.5) * 0.5,
+          baseRadius: isHub ? 2.5 + Math.random() * 2 : 1 + Math.random() * 1.5,
+          radius: 0,
+          color: pickColor(),
+          pulseOffset: Math.random() * Math.PI * 2,
+        });
+      }
+      signals = [];
     };
 
-    const spawnPulse = () => {
-      if (pulses.length > 15) return;
-      const i = Math.floor(Math.random() * particles.length);
-      let closest = -1;
-      let closestDist = Infinity;
-      for (let j = 0; j < particles.length; j++) {
+    const spawnSignal = () => {
+      if (signals.length > 25) return;
+      const i = Math.floor(Math.random() * nodes.length);
+      let bestJ = -1;
+      let bestDist = Infinity;
+
+      for (let j = 0; j < nodes.length; j++) {
         if (j === i) continue;
-        const dx = particles[i].x - particles[j].x;
-        const dy = particles[i].y - particles[j].y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 180 && dist < closestDist && Math.abs(particles[i].layer - particles[j].layer) <= 1) {
-          closest = j;
-          closestDist = dist;
+        const dx = nodes[i].x - nodes[j].x;
+        const dy = nodes[i].y - nodes[j].y;
+        const d = dx * dx + dy * dy;
+        if (d < 220 * 220 && d < bestDist) {
+          bestDist = d;
+          bestJ = j;
         }
       }
-      if (closest !== -1) {
-        pulses.push({
+      if (bestJ !== -1) {
+        signals.push({
           fromIdx: i,
-          toIdx: closest,
+          toIdx: bestJ,
           progress: 0,
-          speed: 0.008 + Math.random() * 0.012,
+          speed: 0.006 + Math.random() * 0.014,
+          color: nodes[i].color,
         });
       }
     };
+
+    const maxConnDist = 200;
 
     const animate = () => {
       time += 0.016;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Spawn new pulses periodically
-      if (Math.random() < 0.08) spawnPulse();
+      // Spawn signals
+      if (Math.random() < 0.12) spawnSignal();
 
-      // Update and draw particles
-      for (let i = 0; i < particles.length; i++) {
-        const p = particles[i];
-
-        p.x += p.vx;
-        p.y += p.vy;
-
-        if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
-        if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
-
-        // Keep layer assignment updated
-        p.layer = Math.min(
-          Math.floor((p.y / canvas.height) * LAYER_COLORS.length),
-          LAYER_COLORS.length - 1
-        );
-
-        const [r, g, b] = LAYER_COLORS[p.layer];
-        const pulse = 0.5 + 0.3 * Math.sin(time * 2 + p.pulsePhase);
-
-        // Draw glow halo for larger particles
-        if (p.radius > 1.8) {
-          const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius * 6);
-          grad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${0.15 * pulse})`);
-          grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-          ctx.fillStyle = grad;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.radius * 6, 0, Math.PI * 2);
-          ctx.fill();
-        }
-
-        // Draw particle
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${0.6 * pulse + 0.2})`;
-        ctx.fill();
-
-        // Connect nearby same-layer / adjacent-layer particles
-        for (let j = i + 1; j < particles.length; j++) {
-          const q = particles[j];
-          if (Math.abs(p.layer - q.layer) > 1) continue;
-
-          const dx = p.x - q.x;
-          const dy = p.y - q.y;
+      // --- Draw connections first (behind nodes) ---
+      for (let i = 0; i < nodes.length; i++) {
+        const a = nodes[i];
+        for (let j = i + 1; j < nodes.length; j++) {
+          const b = nodes[j];
+          const dx = a.x - b.x;
+          const dy = a.y - b.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
 
-          if (dist < 160) {
-            const [r2, g2, b2] = LAYER_COLORS[q.layer];
-            const alpha = 0.1 * (1 - dist / 160);
+          if (dist < maxConnDist) {
+            const fade = 1 - dist / maxConnDist;
+            const [r1, g1, b1] = a.color;
+            const [r2, g2, b2] = b.color;
+            const gradient = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
+            gradient.addColorStop(0, `rgba(${r1},${g1},${b1},${fade * 0.25})`);
+            gradient.addColorStop(1, `rgba(${r2},${g2},${b2},${fade * 0.25})`);
             ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(q.x, q.y);
-            ctx.strokeStyle = `rgba(${(r + r2) >> 1}, ${(g + g2) >> 1}, ${(b + b2) >> 1}, ${alpha})`;
-            ctx.lineWidth = 0.5;
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.strokeStyle = gradient;
+            ctx.lineWidth = fade * 1.2;
             ctx.stroke();
           }
         }
-
-        // Mouse interaction with ripple glow
-        const mdx = p.x - mouse.x;
-        const mdy = p.y - mouse.y;
-        const mDist = Math.sqrt(mdx * mdx + mdy * mdy);
-
-        if (mDist < 250) {
-          const intensity = 1 - mDist / 250;
-          ctx.beginPath();
-          ctx.moveTo(p.x, p.y);
-          ctx.lineTo(mouse.x, mouse.y);
-          ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${0.3 * intensity})`;
-          ctx.lineWidth = 1;
-          ctx.stroke();
-
-          // Glow on interaction
-          const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius * 4);
-          glow.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${0.3 * intensity})`);
-          glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
-          ctx.fillStyle = glow;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.radius * 4, 0, Math.PI * 2);
-          ctx.fill();
-
-          p.vx += (mouse.x - p.x) * 0.00005;
-          p.vy += (mouse.y - p.y) * 0.00005;
-        }
       }
 
-      // Update and draw pulses (data signals)
-      for (let i = pulses.length - 1; i >= 0; i--) {
-        const pulse = pulses[i];
-        pulse.progress += pulse.speed;
+      // --- Update and draw nodes ---
+      for (let i = 0; i < nodes.length; i++) {
+        const n = nodes[i];
+        n.x += n.vx;
+        n.y += n.vy;
 
-        if (pulse.progress >= 1) {
-          pulses.splice(i, 1);
+        if (n.x < -20) n.x = canvas.width + 20;
+        if (n.x > canvas.width + 20) n.x = -20;
+        if (n.y < -20) n.y = canvas.height + 20;
+        if (n.y > canvas.height + 20) n.y = -20;
+
+        const pulse = 0.7 + 0.3 * Math.sin(time * 1.5 + n.pulseOffset);
+        n.radius = n.baseRadius * pulse;
+
+        const [r, g, b] = n.color;
+
+        // Outer glow halo
+        const glowSize = n.radius * 5;
+        const glow = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, glowSize);
+        glow.addColorStop(0, `rgba(${r},${g},${b},${0.2 * pulse})`);
+        glow.addColorStop(0.5, `rgba(${r},${g},${b},${0.05 * pulse})`);
+        glow.addColorStop(1, `rgba(${r},${g},${b},0)`);
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, glowSize, 0, Math.PI * 2);
+        ctx.fillStyle = glow;
+        ctx.fill();
+
+        // Node core
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${r},${g},${b},${0.7 + 0.3 * pulse})`;
+        ctx.fill();
+
+        // Bright center dot
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, n.radius * 0.4, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,255,${0.5 * pulse})`;
+        ctx.fill();
+
+        // Mouse interaction
+        const mdx = n.x - mouse.x;
+        const mdy = n.y - mouse.y;
+        const mDist = Math.sqrt(mdx * mdx + mdy * mdy);
+
+        if (mDist < 300) {
+          const intensity = 1 - mDist / 300;
+
+          // Connection line to cursor
+          ctx.beginPath();
+          ctx.moveTo(n.x, n.y);
+          ctx.lineTo(mouse.x, mouse.y);
+          ctx.strokeStyle = `rgba(${r},${g},${b},${0.4 * intensity})`;
+          ctx.lineWidth = 1.5 * intensity;
+          ctx.stroke();
+
+          // Expanded glow
+          const mGlow = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.radius * 8);
+          mGlow.addColorStop(0, `rgba(${r},${g},${b},${0.35 * intensity})`);
+          mGlow.addColorStop(1, `rgba(${r},${g},${b},0)`);
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, n.radius * 8, 0, Math.PI * 2);
+          ctx.fillStyle = mGlow;
+          ctx.fill();
+
+          // Gentle attraction
+          n.vx += (mouse.x - n.x) * 0.00008 * intensity;
+          n.vy += (mouse.y - n.y) * 0.00008 * intensity;
+        }
+
+        // Speed damping
+        n.vx *= 0.999;
+        n.vy *= 0.999;
+      }
+
+      // --- Draw signals (data pulses) ---
+      for (let i = signals.length - 1; i >= 0; i--) {
+        const sig = signals[i];
+        sig.progress += sig.speed;
+
+        if (sig.progress >= 1) {
+          signals.splice(i, 1);
           continue;
         }
 
-        const from = particles[pulse.fromIdx];
-        const to = particles[pulse.toIdx];
-        if (!from || !to) { pulses.splice(i, 1); continue; }
+        const from = nodes[sig.fromIdx];
+        const to = nodes[sig.toIdx];
+        if (!from || !to) { signals.splice(i, 1); continue; }
 
-        const px = from.x + (to.x - from.x) * pulse.progress;
-        const py = from.y + (to.y - from.y) * pulse.progress;
-        const [r, g, b] = LAYER_COLORS[from.layer];
+        const px = from.x + (to.x - from.x) * sig.progress;
+        const py = from.y + (to.y - from.y) * sig.progress;
+        const [r, g, b] = sig.color;
 
-        // Draw pulse glow
-        const pGrad = ctx.createRadialGradient(px, py, 0, px, py, 8);
-        pGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.8)`);
-        pGrad.addColorStop(0.4, `rgba(${r}, ${g}, ${b}, 0.3)`);
-        pGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        ctx.fillStyle = pGrad;
+        // Large soft glow
+        const sg = ctx.createRadialGradient(px, py, 0, px, py, 14);
+        sg.addColorStop(0, `rgba(${r},${g},${b},0.6)`);
+        sg.addColorStop(0.3, `rgba(${r},${g},${b},0.2)`);
+        sg.addColorStop(1, `rgba(${r},${g},${b},0)`);
         ctx.beginPath();
-        ctx.arc(px, py, 8, 0, Math.PI * 2);
+        ctx.arc(px, py, 14, 0, Math.PI * 2);
+        ctx.fillStyle = sg;
         ctx.fill();
 
-        // Draw pulse core
+        // Bright core
         ctx.beginPath();
-        ctx.arc(px, py, 2, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, 0.9)`;
+        ctx.arc(px, py, 3, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,255,0.95)`;
         ctx.fill();
 
-        // Trail
-        const trail = 0.15;
-        for (let t = 1; t <= 3; t++) {
-          const tp = pulse.progress - trail * t * pulse.speed * 10;
+        // Trail particles
+        for (let t = 1; t <= 5; t++) {
+          const tp = sig.progress - t * 0.025;
           if (tp < 0) continue;
           const tx = from.x + (to.x - from.x) * tp;
           const ty = from.y + (to.y - from.y) * tp;
+          const tAlpha = 0.6 - t * 0.1;
+          const tSize = 2 - t * 0.3;
+          if (tSize <= 0) continue;
           ctx.beginPath();
-          ctx.arc(tx, ty, 1.5 - t * 0.3, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${0.5 - t * 0.15})`;
+          ctx.arc(tx, ty, tSize, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${r},${g},${b},${tAlpha})`;
           ctx.fill();
         }
       }
 
-      // Draw mouse cursor glow
+      // Cursor glow
       if (mouse.x > 0 && mouse.y > 0) {
-        const mGrad = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 60);
-        mGrad.addColorStop(0, 'rgba(139, 92, 246, 0.08)');
-        mGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        ctx.fillStyle = mGrad;
+        const cg = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 100);
+        cg.addColorStop(0, 'rgba(139,92,246,0.12)');
+        cg.addColorStop(0.5, 'rgba(59,130,246,0.04)');
+        cg.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.beginPath();
-        ctx.arc(mouse.x, mouse.y, 60, 0, Math.PI * 2);
+        ctx.arc(mouse.x, mouse.y, 100, 0, Math.PI * 2);
+        ctx.fillStyle = cg;
         ctx.fill();
       }
 
       animationId = requestAnimationFrame(animate);
     };
 
-    const handleMouseMove = (e: MouseEvent) => {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
-    };
+    const onMouseMove = (e: MouseEvent) => { mouse.x = e.clientX; mouse.y = e.clientY; };
+    const onMouseLeave = () => { mouse.x = -9999; mouse.y = -9999; };
+    const onResize = () => { resize(); init(); };
 
-    const handleMouseLeave = () => {
-      mouse.x = -1000;
-      mouse.y = -1000;
-    };
-
-    const handleResize = () => {
-      resize();
-      init();
-    };
-
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseleave', handleMouseLeave);
+    window.addEventListener('resize', onResize);
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseleave', onMouseLeave);
 
     init();
     animate();
 
     return () => {
       cancelAnimationFrame(animationId);
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseleave', handleMouseLeave);
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseleave', onMouseLeave);
     };
   }, []);
 
@@ -288,8 +299,7 @@ export default function NeuralNetwork() {
       ref={canvasRef}
       className="fixed inset-0 -z-10 pointer-events-none"
       style={{
-        background:
-          'linear-gradient(180deg, #0a0a0a 0%, #0d1520 30%, #0f1729 50%, #0d1520 70%, #0a0a0a 100%)',
+        background: 'linear-gradient(180deg, #080c14 0%, #0c1222 40%, #0e1a2e 60%, #0c1222 80%, #080c14 100%)',
       }}
     />
   );

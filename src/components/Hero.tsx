@@ -64,9 +64,7 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-6 tracking-tight"
         >
-          Sambit Kumar
-          <br />
-          <span className="shimmer">Barik</span>
+          <span className="shimmer">Sambit</span>
         </motion.h1>
 
         <motion.div

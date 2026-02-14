@@ -60,8 +60,12 @@ export default function NeuralNetwork() {
       nodes = [];
       for (let i = 0; i < count; i++) {
         const isHub = Math.random() < 0.12;
+        // Bias particle distribution towards the right side
+        // Use a power curve: random^0.6 pushes values toward 1 (right)
+        const rawX = Math.random();
+        const biasedX = Math.pow(rawX, 0.55); // Shifts density rightward
         nodes.push({
-          x: Math.random() * canvas.width,
+          x: biasedX * canvas.width,
           y: Math.random() * canvas.height,
           vx: (Math.random() - 0.5) * 0.5,
           vy: (Math.random() - 0.5) * 0.5,

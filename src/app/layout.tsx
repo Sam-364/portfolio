@@ -9,7 +9,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Sambit Kumar Barik | Machine Learning Engineer',
+  title: 'Sambit | Machine Learning Engineer',
   description:
     'Machine Learning Engineer specializing in production-grade AI systems, LLMs, computer vision, and high-performance inference optimization.',
   keywords: [
@@ -18,10 +18,13 @@ export const metadata: Metadata = {
     'Deep Learning',
     'LLM',
     'Portfolio',
-    'Sambit Kumar Barik',
+    'Sambit',
   ],
+  icons: {
+    icon: '/favicon.svg',
+  },
   openGraph: {
-    title: 'Sambit Kumar Barik | Machine Learning Engineer',
+    title: 'Sambit | Machine Learning Engineer',
     description:
       'Building production-grade AI systems with expertise in LLMs, computer vision, and high-performance inference optimization.',
     type: 'website',

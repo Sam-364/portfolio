@@ -21,7 +21,7 @@ const socials = [
   {
     name: 'LinkedIn',
     handle: 'sambit-kumar-barik',
-    href: 'https://www.linkedin.com/in/sambit-kumar-barik',
+    href: 'https://www.linkedin.com/in/sambit-kumar-barik-1237ba204/',
     icon: FiLinkedin,
     color: 'hover:border-blue-400/40 hover:text-blue-400',
   },

@@ -45,7 +45,7 @@ export default function About() {
             transition={{ duration: 0.5 }}
           >
             <p className="text-neutral-300 text-base leading-relaxed mb-5">
-              I&apos;m a Machine Learning Engineer at{' '}
+              I&apos;m Sambit, a Machine Learning Engineer at{' '}
               <span className="text-cyan-400 font-medium">Skylark Labs</span>,
               where I build production-grade AI systems that push the boundaries
               of performance and scalability. My work spans multi-modal AI

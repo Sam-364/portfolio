@@ -7,8 +7,7 @@ export default function Footer() {
     <footer className="border-t border-white/5 py-8 px-6">
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="text-neutral-500 text-sm">
-          &copy; {new Date().getFullYear()} Sambit Kumar Barik. Built with
-          Next.js
+          &copy; {new Date().getFullYear()} Sambit. Built with Next.js
         </div>
 
         <div className="flex items-center gap-4">
@@ -22,7 +21,7 @@ export default function Footer() {
             <FiGithub className="text-lg" />
           </a>
           <a
-            href="https://www.linkedin.com/in/sambit-kumar-barik"
+            href="https://www.linkedin.com/in/sambit-kumar-barik-1237ba204/"
             target="_blank"
             rel="noopener noreferrer"
             className="text-neutral-500 hover:text-cyan-400 transition-colors"

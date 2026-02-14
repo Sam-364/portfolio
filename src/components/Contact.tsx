@@ -1,7 +1,14 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { FiGithub, FiLinkedin, FiTwitter, FiMail, FiArrowUpRight } from 'react-icons/fi';
+import {
+  FiGithub,
+  FiLinkedin,
+  FiTwitter,
+  FiMail,
+  FiArrowUpRight,
+} from 'react-icons/fi';
+import { SiMedium } from 'react-icons/si';
 
 const socials = [
   {
@@ -32,6 +39,13 @@ const socials = [
     icon: FiTwitter,
     color: 'hover:border-sky-400/40 hover:text-sky-400',
   },
+  {
+    name: 'Medium',
+    handle: '@DataDry',
+    href: 'https://medium.com/@DataDry',
+    icon: SiMedium,
+    color: 'hover:border-green-400/40 hover:text-green-400',
+  },
 ];
 
 export default function Contact() {
@@ -45,6 +59,9 @@ export default function Contact() {
           transition={{ duration: 0.5 }}
           className="text-center mb-16"
         >
+          <p className="text-cyan-400 font-mono text-sm mb-3 tracking-wider uppercase">
+            let&apos;s connect
+          </p>
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             Get In <span className="gradient-text">Touch</span>
           </h2>
@@ -55,7 +72,7 @@ export default function Contact() {
           </p>
         </motion.div>
 
-        <div className="grid sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-3xl mx-auto">
           {socials.map((social, i) => {
             const Icon = social.icon;
             return (
@@ -67,19 +84,19 @@ export default function Contact() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
+                transition={{ delay: i * 0.08 }}
                 className={`group flex items-center gap-4 p-5 rounded-2xl border border-white/5 bg-white/[0.02] transition-all duration-300 hover:bg-white/[0.04] hover:-translate-y-1 ${social.color}`}
               >
-                <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors shrink-0">
                   <Icon className="text-xl" />
                 </div>
-                <div className="flex-grow">
+                <div className="flex-grow min-w-0">
                   <div className="text-sm text-neutral-500">{social.name}</div>
-                  <div className="text-white font-medium text-sm">
+                  <div className="text-white font-medium text-sm truncate">
                     {social.handle}
                   </div>
                 </div>
-                <FiArrowUpRight className="text-neutral-600 group-hover:text-current transition-colors" />
+                <FiArrowUpRight className="text-neutral-600 group-hover:text-current transition-colors shrink-0" />
               </motion.a>
             );
           })}

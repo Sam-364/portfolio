@@ -19,7 +19,7 @@ const colorMap: Record<string, string> = {
 
 export default function About() {
   return (
-    <section id="about" className="py-24 px-6">
+    <section id="about" className="py-24 px-6 relative">
       <div className="max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -28,6 +28,9 @@ export default function About() {
           transition={{ duration: 0.5 }}
           className="text-center mb-16"
         >
+          <p className="text-cyan-400 font-mono text-sm mb-3 tracking-wider uppercase">
+            who i am
+          </p>
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             About <span className="gradient-text">Me</span>
           </h2>
@@ -41,7 +44,7 @@ export default function About() {
             viewport={{ once: true, margin: '-100px' }}
             transition={{ duration: 0.5 }}
           >
-            <p className="text-neutral-300 text-lg leading-relaxed mb-6">
+            <p className="text-neutral-300 text-base leading-relaxed mb-5">
               I&apos;m a Machine Learning Engineer at{' '}
               <span className="text-cyan-400 font-medium">Skylark Labs</span>,
               where I build production-grade AI systems that push the boundaries
@@ -49,9 +52,9 @@ export default function About() {
               pipelines, high-performance inference optimization, and
               cutting-edge model deployment.
             </p>
-            <p className="text-neutral-400 leading-relaxed mb-6">
+            <p className="text-neutral-300 text-base leading-relaxed mb-5">
               With a background from{' '}
-              <span className="text-white font-medium">
+              <span className="text-cyan-400 font-medium">
                 NIT Rourkela
               </span>
               , I specialize in taking complex ML research and transforming it
@@ -60,7 +63,7 @@ export default function About() {
               parallelism for 3.2x throughput improvements on Triton
               Inference Server.
             </p>
-            <p className="text-neutral-400 leading-relaxed">
+            <p className="text-neutral-300 text-base leading-relaxed">
               I&apos;m deeply passionate about LLMs, reinforcement learning,
               graph neural networks, and building the infrastructure that
               makes AI practical and powerful at scale.
@@ -83,8 +86,9 @@ export default function About() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.1 * i }}
-                  className={`p-6 rounded-2xl border ${colorMap[stat.color]} backdrop-blur-sm hover:scale-105 transition-transform duration-300`}
+                  className={`group relative p-6 rounded-2xl border ${colorMap[stat.color]} backdrop-blur-sm hover:scale-105 transition-transform duration-300 overflow-hidden`}
                 >
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   <Icon className="text-2xl mb-3" />
                   <div className="text-3xl font-bold text-white mb-1">
                     {stat.value}

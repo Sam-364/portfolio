@@ -9,6 +9,7 @@ const navLinks = [
   { name: 'Experience', href: '#experience' },
   { name: 'Skills', href: '#skills' },
   { name: 'Projects', href: '#projects' },
+  { name: 'Blog', href: '#blog' },
   { name: 'Contact', href: '#contact' },
 ];
 
@@ -61,13 +62,20 @@ export default function Navbar() {
               <a
                 key={link.name}
                 href={link.href}
-                className={`text-sm transition-colors duration-200 ${
+                className={`relative text-sm transition-colors duration-200 ${
                   activeSection === link.href.slice(1)
                     ? 'text-cyan-400'
                     : 'text-neutral-400 hover:text-white'
                 }`}
               >
                 {link.name}
+                {activeSection === link.href.slice(1) && (
+                  <motion.div
+                    layoutId="activeNav"
+                    className="absolute -bottom-1 left-0 right-0 h-px bg-cyan-400"
+                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                  />
+                )}
               </a>
             ))}
             <a

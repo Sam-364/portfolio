@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { FiBriefcase } from 'react-icons/fi';
+import { FiBriefcase, FiMapPin } from 'react-icons/fi';
 
 const experiences = [
   {
@@ -43,6 +43,9 @@ export default function Experience() {
           transition={{ duration: 0.5 }}
           className="text-center mb-16"
         >
+          <p className="text-cyan-400 font-mono text-sm mb-3 tracking-wider uppercase">
+            where i&apos;ve worked
+          </p>
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             Work <span className="gradient-text">Experience</span>
           </h2>
@@ -50,22 +53,24 @@ export default function Experience() {
         </motion.div>
 
         <div className="relative">
-          {/* Timeline line */}
-          <div className="absolute left-0 md:left-8 top-0 bottom-0 w-px bg-gradient-to-b from-cyan-400/50 via-blue-500/50 to-transparent" />
+          {/* Animated timeline line */}
+          <div className="absolute left-0 md:left-8 top-0 bottom-0 w-px timeline-flow" />
 
           {experiences.map((exp, i) => (
             <motion.div
               key={exp.company}
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: '-50px' }}
               transition={{ duration: 0.5, delay: i * 0.2 }}
               className="relative pl-10 md:pl-20 mb-12 last:mb-0"
             >
-              {/* Timeline dot */}
-              <div className="absolute left-0 md:left-8 top-1 -translate-x-1/2 w-4 h-4 rounded-full bg-cyan-400 border-4 border-[#0a0a0a] shadow-lg shadow-cyan-400/30" />
+              {/* Animated timeline dot */}
+              <div className="absolute left-0 md:left-8 top-1 -translate-x-1/2">
+                <div className="w-4 h-4 rounded-full bg-cyan-400 border-4 border-[#0a0a0a] neural-glow" />
+              </div>
 
-              <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-colors duration-300">
+              <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300 animated-border">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
                   <div>
                     <h3 className="text-xl font-bold text-white">
@@ -77,8 +82,9 @@ export default function Experience() {
                     </div>
                   </div>
                   <div className="text-right mt-2 sm:mt-0">
-                    <div className="text-sm text-neutral-400">{exp.period}</div>
-                    <div className="text-xs text-neutral-500">
+                    <div className="text-sm font-mono text-neutral-400">{exp.period}</div>
+                    <div className="flex items-center gap-1 text-xs text-neutral-500 justify-end mt-0.5">
+                      <FiMapPin className="text-xs" />
                       {exp.location}
                     </div>
                   </div>
@@ -88,10 +94,10 @@ export default function Experience() {
                   {exp.highlights.map((h, j) => (
                     <motion.li
                       key={j}
-                      initial={{ opacity: 0 }}
-                      whileInView={{ opacity: 1 }}
+                      initial={{ opacity: 0, x: -10 }}
+                      whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true }}
-                      transition={{ delay: 0.1 * j }}
+                      transition={{ delay: 0.05 * j + 0.2 }}
                       className="text-sm text-neutral-400 leading-relaxed flex gap-3"
                     >
                       <span className="text-cyan-400/60 mt-1.5 shrink-0">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { FiArrowDown } from 'react-icons/fi';
 
@@ -9,7 +9,118 @@ const roles = [
   'AI Systems Architect',
   'Deep Learning Researcher',
   'Performance Engineer',
+  'LLM Infrastructure Builder',
 ];
+
+// Mini neural network architecture diagram
+function NeuralDiagram() {
+  const layers = [3, 5, 6, 5, 3];
+  const width = 280;
+  const height = 200;
+  const layerSpacing = width / (layers.length + 1);
+
+  const nodes: { x: number; y: number; layer: number }[] = [];
+  layers.forEach((count, layerIdx) => {
+    const x = layerSpacing * (layerIdx + 1);
+    for (let i = 0; i < count; i++) {
+      const y = (height / (count + 1)) * (i + 1);
+      nodes.push({ x, y, layer: layerIdx });
+    }
+  });
+
+  // Build connections between adjacent layers
+  const connections: { x1: number; y1: number; x2: number; y2: number; delay: number }[] = [];
+  let nodeIdx = 0;
+  for (let l = 0; l < layers.length - 1; l++) {
+    const startIdx = nodeIdx;
+    const nextStartIdx = startIdx + layers[l];
+    for (let i = 0; i < layers[l]; i++) {
+      for (let j = 0; j < layers[l + 1]; j++) {
+        connections.push({
+          x1: nodes[startIdx + i].x,
+          y1: nodes[startIdx + i].y,
+          x2: nodes[nextStartIdx + j].x,
+          y2: nodes[nextStartIdx + j].y,
+          delay: l * 0.8 + Math.random() * 0.5,
+        });
+      }
+    }
+    nodeIdx += layers[l];
+  }
+
+  const layerColors = ['#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899'];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 1, delay: 1 }}
+      className="hidden lg:block absolute right-8 xl:right-16 top-1/2 -translate-y-1/2"
+    >
+      <svg width={width} height={height} className="opacity-30 hover:opacity-60 transition-opacity duration-700">
+        {/* Connections */}
+        {connections.map((conn, i) => (
+          <motion.line
+            key={`c-${i}`}
+            x1={conn.x1}
+            y1={conn.y1}
+            x2={conn.x2}
+            y2={conn.y2}
+            stroke="url(#connGradient)"
+            strokeWidth={0.5}
+            initial={{ pathLength: 0, opacity: 0 }}
+            animate={{ pathLength: 1, opacity: 0.3 }}
+            transition={{ duration: 1.5, delay: conn.delay }}
+          />
+        ))}
+
+        {/* Nodes */}
+        {nodes.map((node, i) => (
+          <motion.circle
+            key={`n-${i}`}
+            cx={node.x}
+            cy={node.y}
+            r={3}
+            fill={layerColors[node.layer]}
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 0.7 }}
+            transition={{ duration: 0.5, delay: node.layer * 0.3 + 0.5 }}
+          >
+            <animate
+              attributeName="opacity"
+              values="0.4;0.9;0.4"
+              dur={`${2 + Math.random() * 2}s`}
+              repeatCount="indefinite"
+            />
+          </motion.circle>
+        ))}
+
+        {/* Gradient definition */}
+        <defs>
+          <linearGradient id="connGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#06b6d4" />
+            <stop offset="100%" stopColor="#8b5cf6" />
+          </linearGradient>
+        </defs>
+
+        {/* Layer labels */}
+        {['IN', 'H1', 'H2', 'H3', 'OUT'].map((label, i) => (
+          <text
+            key={label}
+            x={layerSpacing * (i + 1)}
+            y={height - 5}
+            fill="#525252"
+            fontSize="8"
+            textAnchor="middle"
+            fontFamily="monospace"
+          >
+            {label}
+          </text>
+        ))}
+      </svg>
+    </motion.div>
+  );
+}
 
 export default function Hero() {
   const [roleIndex, setRoleIndex] = useState(0);
@@ -45,12 +156,12 @@ export default function Hero() {
       id="home"
       className="relative min-h-screen flex items-center justify-center px-6"
     >
-      <div className="max-w-4xl mx-auto text-center">
+      <div className="max-w-4xl mx-auto text-center relative">
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
-          className="inline-block mb-6 px-4 py-2 rounded-full border border-cyan-500/20 bg-cyan-500/5"
+          className="inline-block mb-6 px-4 py-2 rounded-full border border-cyan-500/20 bg-cyan-500/5 neural-glow"
         >
           <span className="text-cyan-400 font-mono text-sm">
             {'>'} Hello, world! I&apos;m
@@ -65,7 +176,7 @@ export default function Hero() {
         >
           Sambit Kumar
           <br />
-          <span className="gradient-text">Barik</span>
+          <span className="shimmer">Barik</span>
         </motion.h1>
 
         <motion.div
@@ -114,6 +225,8 @@ export default function Hero() {
           </a>
         </motion.div>
       </div>
+
+      <NeuralDiagram />
 
       <motion.a
         href="#about"

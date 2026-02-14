@@ -53,7 +53,7 @@ export default function Navbar() {
             href="#"
             className="text-xl font-bold gradient-text font-mono"
           >
-            &lt;SKB /&gt;
+            GradientForge
           </a>
 
           {/* Desktop nav */}

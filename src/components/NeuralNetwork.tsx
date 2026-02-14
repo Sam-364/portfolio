@@ -297,7 +297,7 @@ export default function NeuralNetwork() {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 -z-10 pointer-events-none"
+      className="fixed inset-0 z-0 pointer-events-none"
       style={{
         background: 'linear-gradient(180deg, #080c14 0%, #0c1222 40%, #0e1a2e 60%, #0c1222 80%, #080c14 100%)',
       }}

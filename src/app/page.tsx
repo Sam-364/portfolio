@@ -11,23 +11,25 @@ import NeuralNetwork from '@/components/NeuralNetwork';
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen bg-[#0a0a0a] text-white overflow-x-hidden">
+    <main className="relative min-h-screen text-white overflow-x-hidden">
       <NeuralNetwork />
-      <Navbar />
-      <Hero />
-      <div className="section-divider max-w-4xl mx-auto" />
-      <About />
-      <div className="section-divider max-w-4xl mx-auto" />
-      <Experience />
-      <div className="section-divider max-w-4xl mx-auto" />
-      <Skills />
-      <div className="section-divider max-w-4xl mx-auto" />
-      <Projects />
-      <div className="section-divider max-w-4xl mx-auto" />
-      <Blog />
-      <div className="section-divider max-w-4xl mx-auto" />
-      <Contact />
-      <Footer />
+      <div className="relative z-10">
+        <Navbar />
+        <Hero />
+        <div className="section-divider max-w-4xl mx-auto" />
+        <About />
+        <div className="section-divider max-w-4xl mx-auto" />
+        <Experience />
+        <div className="section-divider max-w-4xl mx-auto" />
+        <Skills />
+        <div className="section-divider max-w-4xl mx-auto" />
+        <Projects />
+        <div className="section-divider max-w-4xl mx-auto" />
+        <Blog />
+        <div className="section-divider max-w-4xl mx-auto" />
+        <Contact />
+        <Footer />
+      </div>
     </main>
   );
 }
